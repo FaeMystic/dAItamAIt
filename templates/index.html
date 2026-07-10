@@ -1,200 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+
+    <meta charset="UTF-8">
+
     <title>dAItamAIt AI</title>
 
+    <link rel="stylesheet" href="/static/style.css">
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <style>
-        body{
-            background:#111827;
-            color:white;
-            font-family:Arial;
-            text-align:center;
-        }
-
-        .card{
-            background:#1f2937;
-            width:700px;
-            margin:20px auto;
-            padding:25px;
-            border-radius:15px;
-            box-shadow:0 0 20px rgba(0,255,120,.2);
-        }
-
-        input{
-            padding:10px;
-            font-size:18px;
-            width:150px;
-        }
-
-        button{
-            padding:10px 20px;
-            font-size:18px;
-            cursor:pointer;
-        }
-
-        h1{
-            color:#22c55e;
-        }
-
-        .metric{
-            font-size:22px;
-            padding:8px;
-        }
-    </style>
 
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-<h1>dAItamAIt AI</h1>
+    <div class="header">
 
-<input id="ticker" value="AAPL">
+        <h1>dAItamAIt AI</h1>
 
-<button onclick="analyze()">Analyze</button>
+        <p>Artificial Intelligence Investment Analysis</p>
 
-<div id="results"></div>
+    </div>
+
+    <div class="search">
+
+        <input
+            id="ticker"
+            type="text"
+            value="AAPL"
+            placeholder="Ticker">
+
+        <button onclick="analyze()">
+            Analyze
+        </button>
+
+    </div>
+
+    <div id="results"></div>
+
+    <div class="footer">
+
+        dAItamAIt Version 1.1
+
+    </div>
 
 </div>
 
-<script>
-
-async function analyze(){
-
-    let ticker=document.getElementById("ticker").value;
-
-    let response=await fetch("/analyze?ticker="+ticker);
-
-    let data=await response.json();
-
-    document.getElementById("results").innerHTML=`
-
-    <div class="card">
-
-        <h2>${data.signal}</h2>
-
-        <h3>📈 Market Overview</h3>
-
-        <div class="metric"><b>Price:</b> $${data.price}</div>
-
-        <div class="metric"><b>Trend:</b> ${data.trend}</div>
-
-        <div class="metric"><b>Confidence:</b> ${data.confidence}</div>
-
-        <div class="metric"><b>Trade Score:</b> ${data.trade_score}</div>
-
-        <div class="metric"><b>Trend Strength</b></div>
-
-        <div style="width:100%;background:#111827;border-radius:10px;overflow:hidden;height:28px;">
-
-            <div style="width:${data.trend_strength}%;height:28px;background:#22c55e;text-align:center;line-height:28px;color:white;font-weight:bold;">
-
-                ${data.trend_strength}%
-
-            </div>
-
-        </div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>📈 Price Chart</h3>
-
-        <canvas id="priceChart" height="120"></canvas>
-
-    </div>
-
-    <div class="card">
-
-        <h3>🎯 Trade Plan</h3>
-
-        <div class="metric">📍 Entry: $${data.entry_price}</div>
-
-        <div class="metric">🛑 Stop: $${data.stop_loss}</div>
-
-        <div class="metric">🎯 Target: $${data.take_profit}</div>
-
-        <div class="metric">⚖ Risk / Reward: ${data.risk_reward}</div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>🌍 Multi-Timeframe Analysis</h3>
-
-        <div class="metric">📅 Weekly Trend: <b>${data.weekly_trend}</b></div>
-
-        <div class="metric">📈 Daily Trend: <b>${data.daily_trend}</b></div>
-
-        <div class="metric">⏰ Hourly Trend: <b>${data.hourly_trend}</b></div>
-
-        <div class="metric">⭐ Alignment Score: <b>${data.alignment_score}</b></div>
-
-    </div>
-
-    <div class="card">
-
-        <h3>🤖 AI Analysis</h3>
-
-        <p>${data.reason}</p>
-
-    </div>
-
-    <div class="card">
-
-        <h3>📊 Technical Indicators</h3>
-
-        <div class="metric">EMA Trend: ${data.ema_status}</div>
-
-        <div class="metric">MACD: ${data.macd_status}</div>
-
-        <div class="metric">RSI: ${data.rsi_status}</div>
-
-        <div class="metric">ATR: ${data.atr_status}</div>
-
-    </div>
-
-    `;
-
-    const ctx=document.getElementById("priceChart");
-
-    new Chart(ctx,{
-        type:"line",
-        data:{
-            labels:data.chart_labels,
-            datasets:[
-                {
-                    label:"Price",
-                    data:data.chart_prices,
-                    borderWidth:2,
-                    tension:0.3
-                },
-                {
-                    label:"EMA20",
-                    data:data.chart_ema20,
-                    borderWidth:2,
-                    tension:0.3
-                },
-                {
-                    label:"EMA50",
-                    data:data.chart_ema50,
-                    borderWidth:2,
-                    tension:0.3
-                }
-            ]
-        },
-        options:{
-            responsive:true
-        }
-    });
-
-}
-
-</script>
+<script src="/static/app.js"></script>
 
 </body>
+
 </html>

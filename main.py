@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 import yfinance as yf
 import ta
 
 app = FastAPI(title="dAItamAIt", version="0.8.0")
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/")
 def home():

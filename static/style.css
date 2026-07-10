@@ -1,0 +1,121 @@
+/* ===== dAItamAIt v1.1 ===== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    font-family:Arial, Helvetica, sans-serif;
+}
+
+.container{
+    width:95%;
+    max-width:1400px;
+    margin:auto;
+    padding:30px;
+}
+
+h1{
+    color:#22c55e;
+    margin-bottom:20px;
+    text-align:center;
+    font-size:42px;
+}
+
+.header{
+    text-align:center;
+    margin-bottom:30px;
+}
+
+.search{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    margin-bottom:30px;
+}
+
+input{
+    padding:12px;
+    width:220px;
+    border:none;
+    border-radius:8px;
+    font-size:18px;
+}
+
+button{
+    background:#22c55e;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:12px 22px;
+    cursor:pointer;
+    font-size:18px;
+    font-weight:bold;
+}
+
+button:hover{
+    background:#16a34a;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(350px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#1e293b;
+    border-radius:15px;
+    padding:20px;
+    box-shadow:0 0 15px rgba(34,197,94,.15);
+}
+
+.card h2{
+    color:#22c55e;
+    margin-bottom:15px;
+}
+
+.metric{
+    margin:10px 0;
+    font-size:18px;
+}
+
+.signal{
+    text-align:center;
+    font-size:36px;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.score-bar{
+    width:100%;
+    height:24px;
+    background:#111827;
+    border-radius:10px;
+    overflow:hidden;
+    margin-top:10px;
+}
+
+.score-fill{
+    height:24px;
+    background:#22c55e;
+    text-align:center;
+    line-height:24px;
+    font-weight:bold;
+}
+
+canvas{
+    background:white;
+    border-radius:10px;
+}
+
+.footer{
+    text-align:center;
+    color:#94a3b8;
+    margin-top:40px;
+    font-size:14px;
+}
