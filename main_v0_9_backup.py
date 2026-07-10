@@ -14,24 +14,6 @@ def home():
 @app.get("/analyze")
 def analyze(ticker: str):
 
-    stock = yf.Ticker(ticker)
-    info = stock.info
-
-    company_name = info.get("longName", ticker.upper())
-    sector = info.get("sector", "Unknown")
-    industry = info.get("industry", "Unknown")
-    market_cap = info.get("marketCap", 0)
-    website = info.get("website", "")
-
-    if market_cap >= 1_000_000_000_000:
-    	market_cap_display = f"${market_cap/1_000_000_000_000:.2f}T"
-    elif market_cap >= 1_000_000_000:
-    	market_cap_display = f"${market_cap/1_000_000_000:.2f}B"
-    elif market_cap >= 1_000_000:
-    	market_cap_display = f"${market_cap/1_000_000:.2f}M"
-    else:
-    	market_cap_display = str(market_cap)
-
     # Download daily data
     df = yf.download(
         ticker,
@@ -125,6 +107,11 @@ def analyze(ticker: str):
         confidence += 15
         reasons.append("RSI shows momentum")
 
+    if latest["MACD"] > latest["MACD_SIGNAL"]:
+        score += 15
+        confidence += 20
+        reasons.append("MACD crossover is bullish")
+
     confidence = min(confidence, 100)
 
     if score >= 100:
@@ -164,11 +151,6 @@ def analyze(ticker: str):
 
     return {
         "ticker": ticker.upper(),
-	"company_name": company_name,
-	"sector": sector,
-	"industry": industry,
-	"market_cap": market_cap_display,
-	"website": website,
         "price": round(entry_price, 2),
         "entry_price": round(entry_price, 2),
         "stop_loss": round(stop_loss, 2),
