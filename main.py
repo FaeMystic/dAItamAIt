@@ -151,6 +151,7 @@ def analyze(ticker: str):
         "confidence": f"{confidence}%",
         "trend": trend,
         "signal": signal,
+	"trend_strength": min(score, 100),
         "reason": ", ".join(reasons),
         "ema_status": ema_status,
         "macd_status": macd_status,

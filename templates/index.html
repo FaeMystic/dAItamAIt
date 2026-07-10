@@ -81,7 +81,32 @@ async function analyze(){
             <div class="metric"><b>Trend:</b> ${data.trend}</div>
             <div class="metric"><b>Confidence:</b> ${data.confidence}</div>
             <div class="metric"><b>Trade Score:</b> ${data.trade_score}</div>
-        </div>
+<br>
+
+	    <div class="metric"><b>📊 Trend Strength</b></div>
+
+	<div style="
+	    width:100%;
+	    background:#111827;
+	    border-radius:10px;
+	    overflow:hidden;
+	    height:28px;
+">
+
+	    <div style="
+	        width:${data.trend_strength}%;
+	        height:28px;
+	        background:#22c55e;
+	        text-align:center;
+	        line-height:28px;
+	        font-weight:bold;
+	        color:white;
+	">
+
+	        ${data.trend_strength}%
+	</div>
+        
+	</div>
 
         <br>
 
@@ -91,7 +116,8 @@ async function analyze(){
             <div class="metric">📍 Entry: $${data.entry_price}</div>
             <div class="metric">🛑 Stop: $${data.stop_loss}</div>
             <div class="metric">🎯 Target: $${data.take_profit}</div>
-            <div class="metric">⚖ Risk / Reward: ${data.risk_reward}</div>
+            <div class="metric">⚖  Risk / Reward: ${data.risk_reward}</div>
+	</div>
 	<br>
 
 	<div class="card">
@@ -131,6 +157,7 @@ async function analyze(){
 
 	<div class="metric">
 	ATR: ${data.atr_status}
+	</div>
 	</div>
 
     `;
