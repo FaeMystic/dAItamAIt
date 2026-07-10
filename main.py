@@ -101,6 +101,19 @@ def analyze(ticker: str):
         signal = "SELL"
         trend = "Bearish"
 
+    ema_status = "🟢 Bullish" if latest["EMA20"] > latest["EMA50"] else "🔴 Bearish"
+
+    macd_status = "🟢 Bullish" if latest["MACD"] > latest["MACD_SIGNAL"] else "🔴 Bearish"
+
+    if latest["RSI"] > 70:
+        rsi_status = "🔴 Overbought"
+    elif latest["RSI"] < 30:
+        rsi_status = "🟢 Oversold"
+    else:
+        rsi_status = "🟡 Neutral"
+
+    atr_status = "🔵 Normal"
+
     return {
 	"ticker": ticker.upper(),
 	"price": round(float(latest["Close"]), 2),
@@ -118,5 +131,9 @@ def analyze(ticker: str):
         "confidence": f"{confidence}%",
         "trend": trend,
         "signal": signal,
-        "reason": ", ".join(reasons)
-    }
+        "reason": ", ".join(reasons),
+	"ema_status": ema_status,
+        "macd_status": macd_status,
+        "rsi_status": rsi_status,
+        "atr_status": atr_status,
+ }

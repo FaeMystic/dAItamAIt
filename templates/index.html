@@ -102,6 +102,26 @@ async function analyze(){
             <p>${data.reason}</p>
         </div>
 
+	<div class="card">
+
+	<h3>📊 Technical Indicators</h3>
+
+	<div class="metric">
+	EMA Trend: ${data.ema_status}
+	</div>
+
+	<div class="metric">
+	MACD: ${data.macd_status}
+	</div>
+
+	<div class="metric">
+	RSI: ${data.rsi_status}
+	</div>
+
+	<div class="metric">
+	ATR: ${data.atr_status}
+	</div>
+
     `;
 
 }
