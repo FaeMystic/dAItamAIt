@@ -92,6 +92,17 @@ async function analyze(){
             <div class="metric">🛑 Stop: $${data.stop_loss}</div>
             <div class="metric">🎯 Target: $${data.take_profit}</div>
             <div class="metric">⚖ Risk / Reward: ${data.risk_reward}</div>
+	<br>
+
+	<div class="card">
+
+	    <h3>🌍 Multi-Timeframe Analysis</h3>
+
+	    <div class="metric"> 📅 Weekly Trend:<b>${data.weekly_trend}</b></div>
+	    <div class="metric"> 📈 Daily Trend:<b>${data.daily_trend}</b></div>
+	    <div class="metric"> ⏰ Hourly Trend:<b>${data.hourly_trend}</b></div>
+	    <div class="metric"> ⭐ Alignment Score:<b>${data.alignment_score}</b></div>
+
         </div>
 
         <br>
