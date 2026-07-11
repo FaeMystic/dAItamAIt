@@ -14,14 +14,31 @@ async function analyze() {
 
     <div class="grid">
 
-        <div class="card">
+    <div class="card">
 
-            <h2>Company</h2>
+    	<h2>${data.company_name}</h2>
 
-            <div class="metric"><b>Name:</b> ${data.company_name}</div>
-            <div class="metric"><b>Sector:</b> ${data.sector}</div>
-            <div class="metric"><b>Industry:</b> ${data.industry}</div>
-            <div class="metric"><b>Market Cap:</b> ${data.market_cap}</div>
+    	<div class="metric"><b>Ticker:</b> ${data.ticker}</div>
+
+    	<div class="metric"><b>CEO:</b> ${data.ceo}</div>
+
+    	<div class="metric"><b>Sector:</b> ${data.sector}</div>
+
+    	<div class="metric"><b>Industry:</b> ${data.industry}</div>
+
+    	<div class="metric"><b>Employees:</b> ${data.employees.toLocaleString()}</div>
+
+    	<div class="metric"><b>Headquarters:</b> ${data.city}, ${data.country}</div>
+
+    	<div class="metric"><b>Market Cap:</b> ${data.market_cap}</div>
+
+    	<div class="metric">
+        	<b>Website:</b>
+        	<a href="${data.website}" target="_blank">${data.website}</a>
+    </div>
+	<p style="margin-top:20px; line-height:1.5;">
+    	 ${data.summary.substring(0,350)}...
+	    </p>
 
         </div>
 
@@ -88,9 +105,9 @@ async function analyze() {
         <div class="card" style="grid-column:1/-1;">
 
             <h2>Price Chart</h2>
-
-            <canvas id="priceChart"></canvas>
-
+	    <div style="height:400px; width:100%;">
+    	    <canvas id="priceChart"></canvas>
+	</div>
         </div>
 
     </div>
@@ -106,30 +123,41 @@ async function analyze() {
 
             labels: data.chart_labels,
 
-            datasets: [
-
-                {
-                    label: "Price",
-                    data: data.chart_prices
-                },
-
-                {
-                    label: "EMA20",
-                    data: data.chart_ema20
-                },
-
-                {
-                    label: "EMA50",
-                    data: data.chart_ema50
-                }
-
-            ]
-
+    datasets: [
+{
+    	label: "Price",
+    	data: data.chart_prices,
+    	borderColor: "#00ff66",
+    	backgroundColor: "transparent",
+    	borderWidth: 3,
+    	pointRadius: 0,
+    	tension: 0.2
+},
+{
+    	label: "EMA20",
+    	data: data.chart_ema20,
+    	borderColor: "#ffd700",
+    	backgroundColor: "transparent",
+    	borderWidth: 2,
+    	pointRadius: 0,
+    	tension: 0.2
+},
+{
+	label: "EMA50",
+    	data: data.chart_ema50,
+    	borderColor: "#00bfff",
+    	backgroundColor: "transparent",
+    	borderWidth: 2,
+    	pointRadius: 0,
+    	tension: 0.2
+}
+]
         },
 
         options: {
 
             responsive: true,
+	    maintainAspectRatio: false,
 
             plugins: {
 

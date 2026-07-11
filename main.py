@@ -25,6 +25,12 @@ def analyze(ticker: str):
     market_cap = info.get("marketCap", 0)
     website = info.get("website", "")
 
+    ceo = info.get("companyOfficers", [{}])[0].get("name", "Unknown")
+    employees = info.get("fullTimeEmployees", "Unknown")
+    country = info.get("country", "Unknown")
+    city = info.get("city", "Unknown")
+    summary = info.get("longBusinessSummary", "No summary available.")
+
     if market_cap >= 1_000_000_000_000:
     	market_cap_display = f"${market_cap/1_000_000_000_000:.2f}T"
     elif market_cap >= 1_000_000_000:
@@ -171,6 +177,11 @@ def analyze(ticker: str):
 	"industry": industry,
 	"market_cap": market_cap_display,
 	"website": website,
+        "ceo": ceo,
+        "employees": employees,
+        "country": country,
+        "city": city,
+        "summary": summary,
         "price": round(entry_price, 2),
         "entry_price": round(entry_price, 2),
         "stop_loss": round(stop_loss, 2),
