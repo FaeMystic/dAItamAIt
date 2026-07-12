@@ -71,20 +71,16 @@ async function analyze() {
 
         </div>
 
-	<div class="card">
-	<h2>Trade Plan</h2>
+        <div class="card">
 
-	<div class="metric"><b>Support:</b> $${data.support}</div>
-        <div class="metric"><b>Resistance:</b> $${data.resistance}</div>
+            <h2>Trade Plan</h2>
 
-    <hr>
+            <div class="metric">Entry: $${data.entry_price}</div>
+            <div class="metric">Stop: $${data.stop_loss}</div>
+            <div class="metric">Target: $${data.take_profit}</div>
+            <div class="metric">Risk / Reward: ${data.risk_reward}</div>
 
-        <div class="metric"><b>Entry:</b> $${data.entry_price}</div>
-        <div class="metric"><b>Stop:</b> $${data.stop_loss}</div>
-        <div class="metric"><b>Target:</b> $${data.take_profit}</div>
-        <div class="metric"><b>Risk / Reward:</b> ${data.risk_reward}</div>
-
-</div> 
+        </div>
 
         <div class="card">
 
@@ -112,20 +108,7 @@ async function analyze() {
 
             <h2>AI Analysis</h2>
 
-        <div>
-        <h3>Summary</h3>
-        <p>${data.reason.summary}</p>
-
-        <h3>Strengths</h3>
-        <ul>
-            ${data.reason.strengths.map(s => `<li>✅ ${s}</li>`).join("")}
-        </ul>
-
-        <h3>Risks</h3>
-        <ul>
-            ${data.reason.risks.map(r => `<li>⚠️ ${r}</li>`).join("")}
-    	</ul>
-        </div>
+            <p>${data.reason}</p>
 
         </div>
 

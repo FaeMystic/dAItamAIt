@@ -1,5 +1,3 @@
-import pandas as pd
-
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -100,28 +98,6 @@ def analyze(ticker: str):
         window=14
     )
 
-    # ADX
-    adx = ta.trend.ADXIndicator(
-    	high=df["High"],
-    	low=df["Low"],
-    	close=close,
-    	window=14
-    )
-
-    df["ADX"] = adx.adx()
-
-    # Bollinger Bands
-    bb = ta.volatility.BollingerBands(
-    	close=close,
-    	window=20
-    )
-
-    df["BB_HIGH"] = bb.bollinger_hband()
-    df["BB_LOW"] = bb.bollinger_lband()
-
-    # Average Volume
-    df["VOL_AVG"] = df["Volume"].rolling(20).mean()
-
     # Weekly EMA
     weekly["EMA20"] = ta.trend.ema_indicator(weekly["Close"], window=20)
     weekly["EMA50"] = ta.trend.ema_indicator(weekly["Close"], window=50)
@@ -150,56 +126,25 @@ def analyze(ticker: str):
     entry_price = float(latest["Close"])
     atr = float(latest["ATR"])
 
-    # Support & Resistance
-    support = round(df["Low"].tail(30).min(), 2)
-    resistance = round(df["High"].tail(30).max(), 2)
-
     stop_loss = entry_price - (2 * atr)
     take_profit = entry_price + (4 * atr)
 
-    score = 0
+    score = 50
+    confidence = 50
     reasons = []
 
-    # EMA Trend
     if latest["EMA20"] > latest["EMA50"]:
         score += 20
-        reasons.append("EMA trend bullish")
+        confidence += 15
+        reasons.append("EMA trend is bullish")
 
-    # MACD
-    if latest["MACD"] > latest["MACD_SIGNAL"]:
-        score += 15
-        reasons.append("MACD bullish")
+    if latest["RSI"] > 55:
+        score += 20
+        confidence += 15
+        reasons.append("RSI shows momentum")
 
-    # RSI
-    if 50 < latest["RSI"] < 70:
-        score += 10
-        reasons.append("Healthy RSI")
+    confidence = min(confidence, 100)
 
-    # ADX
-    if latest["ADX"] > 25:
-        score += 15
-        reasons.append("Strong trend")
-
-    # Volume
-    if latest["Volume"] > latest["VOL_AVG"]:
-        score += 15
-        reasons.append("Above-average volume")
-
-    # Weekly trend
-    if weekly.iloc[-1]["EMA20"] > weekly.iloc[-1]["EMA50"]:
-        score += 10
-        reasons.append("Weekly bullish")
-
-    # Hourly trend
-    if hourly.iloc[-1]["EMA20"] > hourly.iloc[-1]["EMA50"]:
-        score += 10
-        reasons.append("Hourly bullish")
-
-    # Bollinger Bands
-    if latest["Close"] > latest["BB_LOW"]:
-        score += 5
-
-    confidence = min(score, 100)
     if score >= 100:
         signal = "STRONG BUY"
         trend = "Bullish"
@@ -215,47 +160,14 @@ def analyze(ticker: str):
 
     trade_score = score
 
-    strengths = []
-    risks = []
-
-    if latest["EMA20"] > latest["EMA50"]:
-        strengths.append("EMA trend is bullish")
-    else:
-        risks.append("EMA trend is bearish")
-
-    if latest["MACD"] > latest["MACD_SIGNAL"]:
-        strengths.append("MACD momentum is positive")
-    else:
-        risks.append("MACD momentum is weakening")
-
-    if latest["RSI"] > 55:
-        strengths.append(f"RSI ({latest['RSI']:.1f}) shows buying momentum")
-    elif latest["RSI"] < 45:
-        risks.append(f"RSI ({latest['RSI']:.1f}) shows weak momentum")
-    else:
-        risks.append(f"RSI ({latest['RSI']:.1f}) is neutral")
-
-    # ATR Analysis
-    atr_percent = (atr / entry_price) * 100
-
-    if atr_percent > 2:
-        strengths.append(
-            f"ATR ({atr:.2f}) indicates healthy volatility ({atr_percent:.1f}% daily volatility)."
-    )
-    else:
-        risks.append(
-            f"ATR ({atr:.2f}) indicates low volatility ({atr_percent:.1f}% daily volatility)."
-    )
-    reason = {
-    	"summary": f"{company_name} receives a {signal} rating with a Trade Score of {score}/100.",
-    	"strengths": strengths,
-    	"risks": risks,
-    	"trade_plan": {
-        	"entry": round(entry_price, 2),
-        	"stop": round(stop_loss, 2),
-       	 	"target": round(take_profit, 2)
-    }
-}
+    reason = (
+    	f"{company_name} is trading in a {trend.lower()} trend with a Trade Score of "
+    	f"{score}. The stock is currently trading at ${entry_price:.2f}, above the "
+    	f"20-day EMA (${latest['EMA20']:.2f}) and 50-day EMA (${latest['EMA50']:.2f}). "
+    	f"RSI is {latest['RSI']:.1f}, indicating healthy momentum, while MACD remains positive. "
+    	f"The current technical picture supports the {signal} recommendation, although "
+    	f"traders should continue monitoring the stop-loss level at ${stop_loss:.2f}."
+)
 
     ema_status = "🟢 Bullish" if latest["EMA20"] > latest["EMA50"] else "🔴 Bearish"
     macd_status = "🟢 Bullish" if latest["MACD"] > latest["MACD_SIGNAL"] else "🔴 Bearish"
@@ -322,6 +234,4 @@ def analyze(ticker: str):
 	"chart_prices": chart_prices,
 	"chart_ema20": chart_ema20,
 	"chart_ema50": chart_ema50,
- 	"support": support,
-	"resistance": resistance,
-}
+ }
