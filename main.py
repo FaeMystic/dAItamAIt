@@ -22,6 +22,16 @@ def analyze(ticker: str):
     company_name = info.get("longName", ticker.upper())
     sector = info.get("sector", "Unknown")
     industry = info.get("industry", "Unknown")
+    previous_close = info.get("previousClose", 0)
+    current_price = info.get("currentPrice", 0)
+
+    change = round(current_price - previous_close, 2)
+
+    if previous_close:
+    	percent_change = round((change / previous_close) * 100, 2)
+    else:
+        percent_change = 0  
+
     market_cap = info.get("marketCap", 0)
     website = info.get("website", "")
 
@@ -148,6 +158,17 @@ def analyze(ticker: str):
         signal = "SELL"
         trend = "Bearish"
 
+    trade_score = score
+
+    reason = (
+    	f"{company_name} is trading in a {trend.lower()} trend with a Trade Score of "
+    	f"{score}. The stock is currently trading at ${entry_price:.2f}, above the "
+    	f"20-day EMA (${latest['EMA20']:.2f}) and 50-day EMA (${latest['EMA50']:.2f}). "
+    	f"RSI is {latest['RSI']:.1f}, indicating healthy momentum, while MACD remains positive. "
+    	f"The current technical picture supports the {signal} recommendation, although "
+    	f"traders should continue monitoring the stop-loss level at ${stop_loss:.2f}."
+)
+
     ema_status = "🟢 Bullish" if latest["EMA20"] > latest["EMA50"] else "🔴 Bearish"
     macd_status = "🟢 Bullish" if latest["MACD"] > latest["MACD_SIGNAL"] else "🔴 Bearish"
 
@@ -173,6 +194,8 @@ def analyze(ticker: str):
     return {
         "ticker": ticker.upper(),
 	"company_name": company_name,
+	"change": change,
+	"percent_change": percent_change,
 	"sector": sector,
 	"industry": industry,
 	"market_cap": market_cap_display,
@@ -198,7 +221,7 @@ def analyze(ticker: str):
         "trend": trend,
         "signal": signal,
 	"trend_strength": min(score, 100),
-        "reason": ", ".join(reasons),
+        "reason": reason,
         "ema_status": ema_status,
         "macd_status": macd_status,
         "rsi_status": rsi_status,

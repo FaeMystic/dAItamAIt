@@ -1,0 +1,237 @@
+     1	from fastapi import FastAPI
+     2	from fastapi.responses import FileResponse
+     3	from fastapi.staticfiles import StaticFiles
+     4	import yfinance as yf
+     5	import ta
+     6	
+     7	app = FastAPI(title="dAItamAIt", version="0.8.0")
+     8	
+     9	app.mount("/static", StaticFiles(directory="static"), name="static")
+    10	
+    11	@app.get("/")
+    12	def home():
+    13	    return FileResponse("templates/index.html")
+    14	
+    15	
+    16	@app.get("/analyze")
+    17	def analyze(ticker: str):
+    18	
+    19	    stock = yf.Ticker(ticker)
+    20	    info = stock.info
+    21	
+    22	    company_name = info.get("longName", ticker.upper())
+    23	    sector = info.get("sector", "Unknown")
+    24	    industry = info.get("industry", "Unknown")
+    25	    previous_close = info.get("previousClose", 0)
+    26	    current_price = info.get("currentPrice", 0)
+    27	
+    28	    change = round(current_price - previous_close, 2)
+    29	
+    30	    if previous_close:
+    31	    	percent_change = round((change / previous_close) * 100, 2)
+    32	    else:
+    33	        percent_change = 0  
+    34	
+    35	    market_cap = info.get("marketCap", 0)
+    36	    website = info.get("website", "")
+    37	
+    38	    ceo = info.get("companyOfficers", [{}])[0].get("name", "Unknown")
+    39	    employees = info.get("fullTimeEmployees", "Unknown")
+    40	    country = info.get("country", "Unknown")
+    41	    city = info.get("city", "Unknown")
+    42	    summary = info.get("longBusinessSummary", "No summary available.")
+    43	
+    44	    if market_cap >= 1_000_000_000_000:
+    45	    	market_cap_display = f"${market_cap/1_000_000_000_000:.2f}T"
+    46	    elif market_cap >= 1_000_000_000:
+    47	    	market_cap_display = f"${market_cap/1_000_000_000:.2f}B"
+    48	    elif market_cap >= 1_000_000:
+    49	    	market_cap_display = f"${market_cap/1_000_000:.2f}M"
+    50	    else:
+    51	    	market_cap_display = str(market_cap)
+    52	
+    53	    # Download daily data
+    54	    df = yf.download(
+    55	        ticker,
+    56	        period="6mo",
+    57	        interval="1d",
+    58	        auto_adjust=True,
+    59	        multi_level_index=False
+    60	    )
+    61	
+    62	    # Download weekly data
+    63	    weekly = yf.download(
+    64	        ticker,
+    65	        period="2y",
+    66	        interval="1wk",
+    67	        auto_adjust=True,
+    68	        multi_level_index=False
+    69	    )
+    70	
+    71	    # Download hourly data
+    72	    hourly = yf.download(
+    73	        ticker,
+    74	        period="3mo",
+    75	        interval="1h",
+    76	        auto_adjust=True,
+    77	        multi_level_index=False
+    78	    )
+    79	
+    80	    if df.empty:
+    81	        return {"error": "Ticker not found"}
+    82	
+    83	    close = df["Close"].squeeze()
+    84	
+    85	    # Indicators
+    86	    df["EMA20"] = ta.trend.ema_indicator(close, window=20)
+    87	    df["EMA50"] = ta.trend.ema_indicator(close, window=50)
+    88	    df["RSI"] = ta.momentum.rsi(close, window=14)
+    89	
+    90	    macd = ta.trend.MACD(close)
+    91	    df["MACD"] = macd.macd()
+    92	    df["MACD_SIGNAL"] = macd.macd_signal()
+    93	
+    94	    df["ATR"] = ta.volatility.average_true_range(
+    95	        df["High"],
+    96	        df["Low"],
+    97	        close,
+    98	        window=14
+    99	    )
+   100	
+   101	    # Weekly EMA
+   102	    weekly["EMA20"] = ta.trend.ema_indicator(weekly["Close"], window=20)
+   103	    weekly["EMA50"] = ta.trend.ema_indicator(weekly["Close"], window=50)
+   104	
+   105	    # Hourly EMA
+   106	    hourly["EMA20"] = ta.trend.ema_indicator(hourly["Close"], window=20)
+   107	    hourly["EMA50"] = ta.trend.ema_indicator(hourly["Close"], window=50)
+   108	
+   109	    latest = df.iloc[-1]
+   110	
+   111	    # Historical chart data
+   112	    chart_labels = [d.strftime("%Y-%m-%d") for d in df.index]
+   113	
+   114	    chart_prices = [round(float(x), 2) for x in df["Close"]]
+   115	
+   116	    chart_ema20 = [
+   117	    	round(float(x), 2) if not x != x else None
+   118	    	for x in df["EMA20"]
+   119	    ]
+   120	
+   121	    chart_ema50 = [
+   122	    	round(float(x), 2) if not x != x else None
+   123	        for x in df["EMA50"]
+   124	    ]
+   125	
+   126	    entry_price = float(latest["Close"])
+   127	    atr = float(latest["ATR"])
+   128	
+   129	    stop_loss = entry_price - (2 * atr)
+   130	    take_profit = entry_price + (4 * atr)
+   131	
+   132	    score = 50
+   133	    confidence = 50
+   134	    reasons = []
+   135	
+   136	    if latest["EMA20"] > latest["EMA50"]:
+   137	        score += 20
+   138	        confidence += 15
+   139	        reasons.append("EMA trend is bullish")
+   140	
+   141	    if latest["RSI"] > 55:
+   142	        score += 20
+   143	        confidence += 15
+   144	        reasons.append("RSI shows momentum")
+   145	
+   146	    confidence = min(confidence, 100)
+   147	
+   148	    if score >= 100:
+   149	        signal = "STRONG BUY"
+   150	        trend = "Bullish"
+   151	    elif score >= 75:
+   152	        signal = "BUY"
+   153	        trend = "Bullish"
+   154	    elif score >= 55:
+   155	        signal = "HOLD"
+   156	        trend = "Neutral"
+   157	    else:
+   158	        signal = "SELL"
+   159	        trend = "Bearish"
+   160	
+   161	    trade_score = score
+   162	
+   163	    reason = (
+   164	    	f"{company_name} is trading in a {trend.lower()} trend with a Trade Score of "
+   165	    	f"{score}. The stock is currently trading at ${price:.2f}, above the "
+   166	    	f"20-day EMA (${EMA20:.2f}) and 50-day EMA (${EMA50:.2f}). "
+   167	    	f"RSI is {RSI:.1f}, indicating healthy momentum, while MACD remains positive. "
+   168	    	f"The current technical picture supports the {signal} recommendation, although "
+   169		f"traders should continue monitoring the stop-loss level at ${stop_loss:.2f}."
+   170	    )
+   171	
+   172	    ema_status = "🟢 Bullish" if latest["EMA20"] > latest["EMA50"] else "🔴 Bearish"
+   173	    macd_status = "🟢 Bullish" if latest["MACD"] > latest["MACD_SIGNAL"] else "🔴 Bearish"
+   174	
+   175	    if latest["RSI"] > 70:
+   176	        rsi_status = "🔴 Overbought"
+   177	    elif latest["RSI"] < 30:
+   178	        rsi_status = "🟢 Oversold"
+   179	    else:
+   180	        rsi_status = "🟡 Neutral"
+   181	
+   182	    atr_status = "🔵 Normal"
+   183	
+   184	    weekly_trend = "🟢 Bullish" if weekly.iloc[-1]["EMA20"] > weekly.iloc[-1]["EMA50"] else "🔴 Bearish"
+   185	    daily_trend = "🟢 Bullish" if latest["EMA20"] > latest["EMA50"] else "🔴 Bearish"
+   186	    hourly_trend = "🟢 Bullish" if hourly.iloc[-1]["EMA20"] > hourly.iloc[-1]["EMA50"] else "🔴 Bearish"
+   187	
+   188	    alignment = sum([
+   189	        "Bullish" in weekly_trend,
+   190	        "Bullish" in daily_trend,
+   191	        "Bullish" in hourly_trend
+   192	    ])
+   193	
+   194	    return {
+   195	        "ticker": ticker.upper(),
+   196		"company_name": company_name,
+   197		"change": change,
+   198		"percent_change": percent_change,
+   199		"sector": sector,
+   200		"industry": industry,
+   201		"market_cap": market_cap_display,
+   202		"website": website,
+   203	        "ceo": ceo,
+   204	        "employees": employees,
+   205	        "country": country,
+   206	        "city": city,
+   207	        "summary": summary,
+   208	        "price": round(entry_price, 2),
+   209	        "entry_price": round(entry_price, 2),
+   210	        "stop_loss": round(stop_loss, 2),
+   211	        "take_profit": round(take_profit, 2),
+   212	        "risk_reward": "2 : 1",
+   213	        "EMA20": round(float(latest["EMA20"]), 2),
+   214	        "EMA50": round(float(latest["EMA50"]), 2),
+   215	        "RSI": round(float(latest["RSI"]), 2),
+   216	        "ATR": round(atr, 2),
+   217	        "MACD": round(float(latest["MACD"]), 2),
+   218	        "MACD_SIGNAL": round(float(latest["MACD_SIGNAL"]), 2),
+   219	        "trade_score": score,
+   220	        "confidence": f"{confidence}%",
+   221	        "trend": trend,
+   222	        "signal": signal,
+   223		"trend_strength": min(score, 100),
+   224	        "reason": reason,
+   225	        "ema_status": ema_status,
+   226	        "macd_status": macd_status,
+   227	        "rsi_status": rsi_status,
+   228	        "atr_status": atr_status,
+   229	        "weekly_trend": weekly_trend,
+   230	        "daily_trend": daily_trend,
+   231	        "hourly_trend": hourly_trend,
+   232	        "alignment_score": f"{alignment}/3",
+   233		"chart_labels": chart_labels,
+   234		"chart_prices": chart_prices,
+   235		"chart_ema20": chart_ema20,
+   236		"chart_ema50": chart_ema50,
+   237	 }

@@ -47,8 +47,18 @@ async function analyze() {
             <h2>Market Overview</h2>
 
             <div class="metric"><b>Price:</b> $${data.price}</div>
+	<div class="metric">
+    	    <b>Today's Change:</b>
+    	    <span style="color:${data.change >= 0 ? '#22c55e' : '#ef4444'}">
+       		 ${data.change >= 0 ? '+' : ''}${data.change}
+                 (${data.percent_change}%)
+    		 </span>
+	</div>
+
             <div class="metric"><b>Trend:</b> ${data.trend}</div>
+
             <div class="metric"><b>Confidence:</b> ${data.confidence}</div>
+
             <div class="metric"><b>Trade Score:</b> ${data.trade_score}</div>
 
             <div class="score-bar">
